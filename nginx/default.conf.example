@@ -1,0 +1,64 @@
+# web service1 config.
+# server {
+#   listen 80;
+#   server_name localhost;
+
+#   location / {
+#     include /etc/nginx/includes/proxy.conf;
+#     proxy_pass http://ghost:2368;
+#   }
+
+#   access_log off;
+#   error_log  /var/log/nginx/error.log error;
+# }
+server {
+    listen 80;
+    server_name <IP ADDRESS OR DOMAIN NAME(S) HERE>;
+    # listen 80 default_server;
+    # server_name _;
+    return 307 https://$host$request_uri;
+}
+server {
+  listen 443 ssl http2;
+  server_name <IP ADDRESS OR DOMAIN NAME(S) HERE>;
+  # Path for SSL config/key/certificate
+  ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
+  ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+  # include /etc/nginx/includes/ssl.conf;
+  location / {
+    # include /etc/nginx/includes/proxy.conf;
+    # proxy_set_header X_FORWARDED_PROTO https;
+    proxy_set_header X-Forwarded-Proto https;
+    # proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Url-Scheme $scheme;
+    proxy_redirect   off;
+    proxy_max_temp_file_size 0;
+    proxy_pass http://ghost:2368;
+  }
+  access_log off;
+  # error_log  /var/log/nginx/error.log error;
+  error_log  /dev/stdout error;
+}
+
+# Default
+server {
+listen 80 default_server;
+
+server_name _;
+root /var/www/html;
+
+charset UTF-8;
+
+error_page 404 /backend-not-found.html;
+location = /backend-not-found.html {
+allow   all;
+}
+location / {
+return 404;
+}
+
+access_log off;
+log_not_found off;
+error_log  /var/log/nginx/error.log error;
+}

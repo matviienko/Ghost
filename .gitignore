@@ -1,3 +1,9 @@
+mysqldata/
+ghostdata/
+nginx/nginx-selfsigned.crt
+nginx/nginx-selfsigned.key
+nginx/default.conf
+
 # Node template
 
 # Logs

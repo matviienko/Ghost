@@ -1,0 +1,47 @@
+version: "2.1"
+networks:
+  ghostnet:
+      driver: bridge
+services:
+  ghost:
+    container_name: ghost
+    env_file: .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # restart: always
+    environment:
+      # see https://docs.ghost.org/docs/config#section-running-ghost-with-config-env-variables
+      database__client: ${database__client:-mysql}
+      database__connection__host: ${database__connection__host:-mysqldb}
+      database__connection__user: ${database__connection__user:-root}
+      database__connection__password: ${database__connection__password:-example}
+      database__connection__database: ${database__connection__database:-ghost}
+      url: ${url:-http://localhost:8080}
+      server__ip: "0.0.0.0"
+      server__host: "0.0.0.0"
+      server__port: 2368
+    ports:
+      - "8080:2368/tcp"
+    volumes:
+      - ./:/var/lib/ghost
+      # - ./ghostdata:/var/lib/ghost/content
+      - /var/lib/ghost/node_modules/
+      - /var/lib/ghost/core/client/node_modules/
+    depends_on:
+      - "mysqldb"
+    networks:
+      - ghostnet
+  mysqldb:
+    container_name: mysqldb
+    env_file: .env
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-example}
+    ports:
+      - "3306:3306/tcp"
+    volumes:
+      - ./mysqldata:/var/lib/mysql
+    networks:
+      - ghostnet
